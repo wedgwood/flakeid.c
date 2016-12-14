@@ -9,6 +9,8 @@
 typedef struct flakeid_ctx_s flakeid_ctx_t;
 
 flakeid_ctx_t *flakeid_ctx_create(const unsigned char *machine, size_t len);
+flakeid_ctx_t *flakeid_ctx_create_with_if(const char *if_name);
+flakeid_ctx_t *flakeid_ctx_create_with_spoof();
 void flakeid_ctx_destroy(flakeid_ctx_t *ctx);
 
 int flakeid_updatetime(flakeid_ctx_t *ctx, struct timeval *tv);

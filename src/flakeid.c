@@ -1,4 +1,5 @@
 #include "flakeid.h"
+#include "system.h"
 
 #include <endian.h>
 #include <stdint.h>
@@ -8,6 +9,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 struct flakeid_ctx_s {
   uint64_t time;
@@ -17,6 +19,38 @@ struct flakeid_ctx_s {
   } worker;
   uint16_t seq;
 };
+
+static inline int random_with_range(int min, int max) {
+  return random() % (max + 1 - min) + min;
+}
+
+static inline void spoof_mac(unsigned char *mac) {
+  // randomly assign a VM vendor's mac address prefix, which should
+  // decrease chance of colliding with existing device's address
+
+  static const unsigned char vendors[][3] = {
+    {0x00, 0x05, 0x69}, // VMware
+    {0x00, 0x50, 0x56}, // VMware
+    {0x00, 0x0C, 0x29}, // VMware
+    {0x00, 0x16, 0x3E}, // Xen
+    {0x00, 0x03, 0xFF}, // Microsoft Hyper-V, Virtual Server, Virtual PC
+    {0x00, 0x1C, 0x42}, // Parallels
+    {0x00, 0x0F, 0x4B}, // Virtual Iron 4
+    {0x08, 0x00, 0x27}  // Sun Virtual Box
+  };
+
+  // seed the random
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec * 1000 + (tv.tv_usec / 1000));
+
+  int vendor = random_with_range(0, sizeof(vendors) / sizeof(vendors[0]));
+
+  memcpy(mac, vendors[vendor], 3);
+  mac[3] = random_with_range(0x00, 0x7F);
+  mac[4] = random_with_range(0x00, 0xFF);
+  mac[5] = random_with_range(0x00, 0xFF);
+}
 
 flakeid_ctx_t *flakeid_ctx_create(const unsigned char *machine, size_t len) {
   flakeid_ctx_t *ret = NULL;
@@ -32,6 +66,23 @@ flakeid_ctx_t *flakeid_ctx_create(const unsigned char *machine, size_t len) {
   }
 
   return ret;
+}
+
+flakeid_ctx_t *flakeid_ctx_create_with_if(const char *if_name) {
+  flakeid_ctx_t *ret = NULL;
+  unsigned char mac[6];
+
+  if (!get_mac(if_name, mac)) {
+    ret = flakeid_ctx_create(mac, 6);
+  }
+
+  return ret;
+}
+
+flakeid_ctx_t *flakeid_ctx_create_with_spoof() {
+  unsigned char mac[6];
+  spoof_mac(mac);
+  return flakeid_ctx_create(mac, 6);
 }
 
 void flakeid_ctx_destroy(flakeid_ctx_t *ctx) {

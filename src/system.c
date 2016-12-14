@@ -7,7 +7,7 @@
 #include <net/if.h>
 #include <net/if_arp.h>
 
-int get_mac(char *if_name, unsigned char *out) {
+int get_mac(const char *if_name, unsigned char *out) {
   int ret = -1;
   struct ifreq ifr;
   size_t if_name_len = strlen(if_name);
