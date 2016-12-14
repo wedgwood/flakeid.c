@@ -23,7 +23,8 @@ int main() {
     unsigned char id[16];
     flakeid_get(ctx, id);
     unsigned char hex[36] = {'\0'};
-    flakeid_hexdump(id, '-', hex);
+    flakeid_hexdump(id, 0, hex);
+    printf("=> %s\n", hex);
     uint64_t time;
     uint16_t seq;
     unsigned char mac[6];

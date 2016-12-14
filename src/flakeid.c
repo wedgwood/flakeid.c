@@ -83,19 +83,27 @@ int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out) {
 }
 
 void flakeid_hexdump(const unsigned char *id, char delimiter, unsigned char *out) {
-  if (!delimiter) {
-    delimiter = '-';
+  if (delimiter) {
+    snprintf(
+      (char *)out,
+      35,
+      "%02x%02x%02x%02x%02x%02x%c%02x%02x%c%02x%02x%02x%02x%02x%02x%c%02x%02x",
+      id[0], id[1], id[2], id[3], id[4], id[5], delimiter,
+      id[6], id[7], delimiter,
+      id[8], id[9], id[10], id[11], id[12], id[13], delimiter,
+      id[14], id[15]
+    );
+  } else {
+    snprintf(
+      (char *)out,
+      32,
+      "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+      id[0], id[1], id[2], id[3], id[4], id[5],
+      id[6], id[7],
+      id[8], id[9], id[10], id[11], id[12], id[13],
+      id[14], id[15]
+    );
   }
-
-  snprintf(
-    (char *)out,
-    35,
-    "%02x%02x%02x%02x%02x%02x%c%02x%02x%c%02x%02x%02x%02x%02x%02x%c%02x%02x",
-    id[0], id[1], id[2], id[3], id[4], id[5], delimiter,
-    id[6], id[7], delimiter,
-    id[8], id[9], id[10], id[11], id[12], id[13], delimiter,
-    id[14], id[15]
-  );
 }
 
 void flakeid_extract(const unsigned char *id, uint64_t *time, uint16_t *seq, unsigned char *mac, uint16_t *pid) {
