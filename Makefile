@@ -1,5 +1,5 @@
 CC            = gcc
-CFLAGS        = -W -Wall -O3
+CFLAGS        = -W -Wall -O3 -fPIC
 INCLUDES      = -I.
 SOURCE_DIR    = ./src
 HEADER_DIR    = ./include
@@ -16,7 +16,7 @@ $TARGET_FILE: $(OBJS)
 	ar r $(TARGET_FILE) $(OBJS)
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.c $(HEADER_DIR)/%.h
-	$(CC) -c $(CFLAGS) -I$(HEADER_DIR) $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -I$(HEADER_DIR) -o $@ $<
 
 test: $(TARGET_FILE)
 	gcc -g test/test.c $(TARGET_FILE) -I$(HEADER_DIR) -o ./test/test
