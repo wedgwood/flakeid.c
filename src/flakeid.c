@@ -19,7 +19,6 @@ struct flakeid_ctx_s {
 };
 
 flakeid_ctx_t *flakeid_ctx_create(const unsigned char *machine, size_t len) {
-  printf("mac=%02x:%02x:%02x:%02x:%02x:%02x\n", machine[0], machine[1], machine[2], machine[3], machine[4], machine[5]);
   flakeid_ctx_t *ret = NULL;
   flakeid_ctx_t *ctx = (flakeid_ctx_t *)calloc(sizeof(flakeid_ctx_t), 1);
 
