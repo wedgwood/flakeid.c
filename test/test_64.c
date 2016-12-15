@@ -20,6 +20,9 @@ int main() {
     unsigned int machine;
     flakeid64_extract(id, &time, &machine, &seq);
     printf("=> %ld: %lu-%lu-%u\n", id, time, machine, seq);
+    unsigned char hex[33] = {'\0'};
+    flakeid64_hexdump(id, hex);
+    printf("%s\n", hex);
   }
 
   flakeid64_ctx_destroy(ctx);

@@ -27,6 +27,7 @@ void flakeid64_ctx_destroy(flakeid64_ctx_t *ctx);
 int flakeid64_updatetime(flakeid64_ctx_t *ctx, struct timeval *tv);
 int flakeid64_generate(flakeid64_ctx_t *ctx, int64_t *out);
 int flakeid64_get(flakeid64_ctx_t *ctx, int64_t *out);
+void flakeid64_hexdump(int64_t id, unsigned char *out);
 void flakeid64_extract(int64_t id, uint64_t *time, unsigned int *machine, uint16_t *seq);
 
 #endif //!__FLAKEID_H__

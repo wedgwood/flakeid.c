@@ -296,6 +296,19 @@ int flakeid64_get(flakeid64_ctx_t *ctx, int64_t *out) {
   return ret;
 }
 
+void flakeid64_hexdump(int64_t id, unsigned char *out) {
+  const char *hex = "0123456789abcdef";
+  int i = 8;
+  int j = 0;
+  unsigned char *id_buf = (unsigned char *)&id;
+
+  while (--i >= 0) {
+    unsigned char ch = id_buf[i];
+    out[j++]         = hex[(ch >> 4) & 0X0F];
+    out[j++]         = hex[ch & 0x0F];
+  }
+}
+
 void flakeid64_extract(int64_t id, uint64_t *time, unsigned int *machine, uint16_t *seq) {
   if (time) {
     *time = id >> 22;
