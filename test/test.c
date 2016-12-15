@@ -30,8 +30,8 @@ int main() {
     uint16_t seq;
     unsigned char mac[6];
     uint16_t pid;
-    flakeid_extract(id, &time, &seq, mac, &pid);
-    printf("=> %s: %lu-%u-%02x:%02x:%02x:%02x:%02x:%02x-%u\n", hex, time, seq, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], pid);
+    flakeid_extract(id, &time, mac, &pid, &seq);
+    printf("=> %s: %lu-%02x:%02x:%02x:%02x:%02x:%02x-%u-%u\n", hex, time, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], pid, seq);
   }
 
   flakeid_ctx_destroy(ctx);

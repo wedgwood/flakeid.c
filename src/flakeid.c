@@ -101,7 +101,13 @@ int flakeid_updatetime(flakeid_ctx_t *ctx, struct timeval *tv) {
   }
 
   if (tv) {
-    ctx->time = tv->tv_sec * 1000 + tv->tv_usec / 1000;
+    uint64_t time = tv->tv_sec * 1000 + tv->tv_usec / 1000;
+
+    if (ctx->time != time) {
+      ctx->time = time;
+      ctx->seq = 0;
+    }
+
     ret = 0;
   }
 
@@ -113,13 +119,13 @@ void flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out) {
   uint16_t seq_be = htobe16(ctx->seq++);
 
   /* [48 bits | Timestamp, in milliseconds since the epoch] */
-  /* [16 bits | a per-process counter, reset each millisecond] */
   /* [48 bits | a host identifier] */
   /* [16 bits | the process ID] */
+  /* [16 bits | a per-process counter, reset each millisecond] */
   memcpy(out, (char *)&time_be + 2, 6);
-  memcpy(out + 6, &seq_be, 2);
-  memcpy(out + 8, ctx->worker.machine, 6);
-  memcpy(out + 14, &ctx->worker.pid, 2);
+  memcpy(out + 6, ctx->worker.machine, 6);
+  memcpy(out + 12, &ctx->worker.pid, 2);
+  memcpy(out + 14, &seq_be, 2);
 }
 
 int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out) {
@@ -134,46 +140,72 @@ int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out) {
 }
 
 void flakeid_hexdump(const unsigned char *id, char delimiter, unsigned char *out) {
+  const char *hex = "0123456789abcdef";
+
   if (delimiter) {
-    snprintf(
-      (char *)out,
-      35,
-      "%02x%02x%02x%02x%02x%02x%c%02x%02x%c%02x%02x%02x%02x%02x%02x%c%02x%02x",
-      id[0], id[1], id[2], id[3], id[4], id[5], delimiter,
-      id[6], id[7], delimiter,
-      id[8], id[9], id[10], id[11], id[12], id[13], delimiter,
-      id[14], id[15]
-    );
+    int i = 0;
+    int j = 0;
+
+    for (; i < 6; ++i) {
+      unsigned char ch = id[i];
+      out[j++]         = hex[(ch >> 4) & 0X0F];
+      out[j++]         = hex[ch & 0x0F];
+    }
+
+    out[j++] = delimiter;
+
+    for (; i < 12; ++i) {
+      unsigned char ch = id[i];
+      out[j++]         = hex[(ch >> 4) & 0X0F];
+      out[j++]         = hex[ch & 0x0F];
+    }
+
+    out[j++] = delimiter;
+
+    for (; i < 14; ++i) {
+      unsigned char ch = id[i];
+      out[j++]         = hex[(ch >> 4) & 0X0F];
+      out[j++]         = hex[ch & 0x0F];
+    }
+
+    out[j++] = delimiter;
+
+    for (; i < 16; ++i) {
+      unsigned char ch = id[i];
+      out[j++]         = hex[(ch >> 4) & 0X0F];
+      out[j++]         = hex[ch & 0x0F];
+    }
   } else {
-    snprintf(
-      (char *)out,
-      32,
-      "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-      id[0], id[1], id[2], id[3], id[4], id[5],
-      id[6], id[7],
-      id[8], id[9], id[10], id[11], id[12], id[13],
-      id[14], id[15]
-    );
+    int i = 0;
+    int j = 0;
+
+    for (; i < 16; ++i) {
+      unsigned char ch = id[i];
+      out[j++]         = hex[(ch >> 4) & 0X0F];
+      out[j++]         = hex[ch & 0x0F];
+    }
   }
 }
 
-void flakeid_extract(const unsigned char *id, uint64_t *time, uint16_t *seq, unsigned char *mac, uint16_t *pid) {
+void flakeid_extract(const unsigned char *id, uint64_t *time, unsigned char *mac, uint16_t *pid, uint16_t *seq) {
   if (time) {
     uint64_t time_be = 0;
     memcpy((char *)&time_be + 2, id, 6);
     *time = be64toh(time_be);
   }
 
-  if (seq) {
-    uint16_t seq_be = *(uint16_t *)(id + 6);
-    *seq = be16toh(seq_be);
-  }
-
   if (mac) {
-    memcpy(mac, id + 8, 6);
+    memcpy(mac, id + 6, 6);
   }
 
   if (pid) {
-    *pid = be16toh(*(uint16_t *)(id + 14));
+    *pid = be16toh(*(uint16_t *)(id + 12));
   }
+
+  if (seq) {
+    uint16_t seq_be = *(uint16_t *)(id + 14);
+    *seq = be16toh(seq_be);
+  }
+
+
 }

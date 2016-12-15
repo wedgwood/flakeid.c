@@ -17,6 +17,6 @@ int flakeid_updatetime(flakeid_ctx_t *ctx, struct timeval *tv);
 void flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out);
 int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out);
 void flakeid_hexdump(const unsigned char *id, char delimiter, unsigned char *out);
-void flakeid_extract(const unsigned char *id, uint64_t *time, uint16_t *seq, unsigned char *mac, uint16_t *pid);
+void flakeid_extract(const unsigned char *id, uint64_t *time, unsigned char *mac, uint16_t *pid, uint16_t *seq);
 
 #endif //!__FLAKEID_H__
