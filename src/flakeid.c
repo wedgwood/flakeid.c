@@ -20,6 +20,12 @@ struct flakeid_ctx_s {
   uint16_t seq;
 };
 
+struct flakeid64_ctx_s {
+  uint64_t time;
+  uint16_t machine;
+  uint16_t seq;
+};
+
 static inline int random_with_range(int min, int max) {
   return random() % (max + 1 - min) + min;
 }
@@ -50,6 +56,14 @@ static inline void spoof_mac(unsigned char *mac) {
   mac[3] = random_with_range(0x00, 0x7F);
   mac[4] = random_with_range(0x00, 0xFF);
   mac[5] = random_with_range(0x00, 0xFF);
+}
+
+static inline unsigned spoof_machine() {
+  // seed the random
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  srand(((tv.tv_sec * 1000 + tv.tv_usec / 1000) << 2) | (0xFFFF & getpid()));
+  return random_with_range(0, 1023);
 }
 
 flakeid_ctx_t *flakeid_ctx_create(const unsigned char *machine, size_t len) {
@@ -114,7 +128,7 @@ int flakeid_updatetime(flakeid_ctx_t *ctx, struct timeval *tv) {
   return ret;
 }
 
-void flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out) {
+int flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out) {
   uint64_t time_be = htobe64(ctx->time);
   uint16_t seq_be = htobe16(ctx->seq++);
 
@@ -126,6 +140,7 @@ void flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out) {
   memcpy(out + 6, ctx->worker.machine, 6);
   memcpy(out + 12, &ctx->worker.pid, 2);
   memcpy(out + 14, &seq_be, 2);
+  return 0;
 }
 
 int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out) {
@@ -206,6 +221,91 @@ void flakeid_extract(const unsigned char *id, uint64_t *time, unsigned char *mac
     uint16_t seq_be = *(uint16_t *)(id + 14);
     *seq = be16toh(seq_be);
   }
+}
 
+flakeid64_ctx_t *flakeid64_ctx_create(unsigned int machine) {
+  flakeid64_ctx_t *ret = NULL;
+  flakeid64_ctx_t *ctx = (flakeid64_ctx_t *)calloc(sizeof(flakeid64_ctx_t), 1);
 
+  if (ctx) {
+    ctx->machine = machine & 0x03FF;
+    ret = ctx;
+  }
+
+  return ret;
+}
+
+flakeid64_ctx_t *flakeid64_ctx_create_with_spoof() {
+  flakeid64_ctx_t *ret = NULL;
+  flakeid64_ctx_t *ctx = (flakeid64_ctx_t *)calloc(sizeof(flakeid64_ctx_t), 1);
+
+  if (ctx) {
+    ctx->machine = spoof_machine();
+    ret = ctx;
+  }
+
+  return ret;
+}
+
+void flakeid64_ctx_destroy(flakeid64_ctx_t *ctx) {
+  free(ctx);
+}
+
+int flakeid64_updatetime(flakeid64_ctx_t *ctx, struct timeval *tv) {
+  int ret = -1;
+
+  if (!tv) {
+    struct timeval now;
+
+    if (gettimeofday(&now, NULL) == 0) {
+      tv = &now;
+    }
+  }
+
+  if (tv) {
+    uint64_t time = tv->tv_sec * 1000 + tv->tv_usec / 1000;
+
+    if (ctx->time != time) {
+      ctx->time = time;
+      ctx->seq = 0;
+    }
+
+    ret = 0;
+  }
+
+  return ret;
+}
+
+int flakeid64_generate(flakeid64_ctx_t *ctx, int64_t *out) {
+  /* [1  bit  | signed bit, always 0] */
+  /* [41 bits | Timestamp, in milliseconds since the epoch] */
+  /* [10 bits | machine id] */
+  /* [12 bits | a per-process counter, reset each millisecond] */
+  *out = ((ctx->time & 0xFFFFFFFFFFFF) << 22) | (ctx->machine << 12) | (ctx->seq++ & 0x0FFF);
+  return 0;
+}
+
+int flakeid64_get(flakeid64_ctx_t *ctx, int64_t *out) {
+  int ret = -1;
+
+  if (!flakeid64_updatetime(ctx, NULL)) {
+    flakeid64_generate(ctx, out);
+    ret = 0;
+  }
+
+  return ret;
+}
+
+void flakeid64_extract(int64_t id, uint64_t *time, unsigned int *machine, uint16_t *seq) {
+  if (time) {
+    *time = id >> 22;
+  }
+
+  if (machine) {
+    *machine = (id >> 12) & 0x03FF;
+  }
+
+  if (seq) {
+    *seq = id & 0x0FFF;
+  }
 }

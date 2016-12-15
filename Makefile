@@ -20,6 +20,7 @@ $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.c $(HEADER_DIR)/%.h
 
 test: $(TARGET_FILE)
 	gcc -g test/test.c $(TARGET_FILE) -I$(HEADER_DIR) -o ./test/test
+	gcc -g test/test_64.c $(TARGET_FILE) -I$(HEADER_DIR) -o ./test/test64
 
 clean:
 	@rm $(OBJS) $(TARGET_FIELS) -f
