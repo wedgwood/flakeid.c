@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+static const uint64_t twepoch = 1288834974657L;
+
 struct flakeid_ctx_s {
   uint64_t time;
   struct {
@@ -281,7 +283,7 @@ int flakeid64_generate(flakeid64_ctx_t *ctx, int64_t *out) {
   /* [41 bits | Timestamp, in milliseconds since the epoch] */
   /* [10 bits | machine id] */
   /* [12 bits | a per-process counter, reset each millisecond] */
-  *out = ((ctx->time & 0xFFFFFFFFFFFF) << 22) | (ctx->machine << 12) | (ctx->seq++ & 0x0FFF);
+  *out = (((ctx->time - twepoch) & 0xFFFFFFFFFFFF) << 22) | (ctx->machine << 12) | (ctx->seq++ & 0x0FFF);
   return 0;
 }
 
@@ -311,7 +313,7 @@ void flakeid64_hexdump(int64_t id, unsigned char *out) {
 
 void flakeid64_extract(int64_t id, uint64_t *time, unsigned int *machine, uint16_t *seq) {
   if (time) {
-    *time = id >> 22;
+    *time = (id >> 22) + twepoch;
   }
 
   if (machine) {
