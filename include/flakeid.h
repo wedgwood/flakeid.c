@@ -15,8 +15,6 @@ flakeid_ctx_t *flakeid_ctx_create_with_spoof();
 void flakeid_ctx_destroy(flakeid_ctx_t *ctx);
 
 int flakeid_updatetime(flakeid_ctx_t *ctx, struct timeval *tv);
-uint64_t flakeid_next_seq(flakeid_ctx_t *ctx);
-const unsigned char *flakeid_machine(flakeid_ctx_t *ctx);
 int flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out);
 int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out);
 void flakeid_hexdump(const unsigned char *id, char delimiter, unsigned char *out);
