@@ -15,6 +15,14 @@ int main() {
     printf("mac=%02x:%02x:%02x:%02x:%02x:%02x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   }
 
+  unsigned char ip[4];
+  rc = get_ipv4("eth0", (uint32_t *)ip);
+
+  if (rc) {
+    printf("no ip address found for eth0\n");
+  } else {
+    printf("ip=%d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+  }
 
   /* flakeid_ctx_t *ctx = flakeid_ctx_create(mac, 6); */
   flakeid_ctx_t *ctx = flakeid_ctx_create_with_spoof();
