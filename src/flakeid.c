@@ -14,12 +14,12 @@
 static const uint64_t twepoch = 1288834974657L;
 
 struct flakeid_ctx_s {
-  uint64_t time;
   struct {
     unsigned char machine[6];
     uint16_t pid;
   } worker;
-  uint16_t seq;
+  uint64_t time;
+  uint64_t seq;
 };
 
 struct flakeid64_ctx_s {
@@ -130,9 +130,17 @@ int flakeid_updatetime(flakeid_ctx_t *ctx, struct timeval *tv) {
   return ret;
 }
 
+uint64_t flakeid_next_seq(flakeid_ctx_t *ctx) {
+  return ctx->seq++;
+}
+
+const unsigned char *flakeid_machine(flakeid_ctx_t *ctx) {
+  return ctx->worker.machine;
+}
+
 int flakeid_generate(flakeid_ctx_t *ctx, unsigned char *out) {
   uint64_t time_be = htobe64(ctx->time);
-  uint16_t seq_be = htobe16(ctx->seq++);
+  uint16_t seq_be = htobe16(flakeid_next_seq(ctx) & 0xFFFF);
 
   /* [48 bits | Timestamp, in milliseconds since the epoch] */
   /* [48 bits | a host identifier] */
