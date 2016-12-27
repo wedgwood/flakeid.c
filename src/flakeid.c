@@ -162,7 +162,7 @@ int flakeid_get(flakeid_ctx_t *ctx, unsigned char *out) {
 }
 
 void flakeid_hexdump(const unsigned char *id, char delimiter, unsigned char *out) {
-  const char *hex = "0123456789abcdef";
+  static const char *hex = "0123456789abcdef";
 
   if (delimiter) {
     int i = 0;
@@ -309,7 +309,7 @@ int flakeid64_get(flakeid64_ctx_t *ctx, int64_t *out) {
 }
 
 void flakeid64_hexdump(int64_t id, unsigned char *out) {
-  const char *hex = "0123456789abcdef";
+  static const char *hex = "0123456789abcdef";
   int i = 8;
   int j = 0;
   unsigned char *id_buf = (unsigned char *)&id;
