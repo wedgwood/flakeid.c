@@ -16,7 +16,7 @@ int main() {
   }
 
   /* flakeid_ctx_t *ctx = flakeid_ctx_create(mac, 6); */
-  flakeid_ctx_t *ctx = flakeid_ctx_create_with_spoof();
+  flakeid_ctx_t *ctx = flakeid_ctx_create_with_spoof(NULL);
   int i = 0;
 
   for (; i < 10000; ++i) {

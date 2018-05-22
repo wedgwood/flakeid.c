@@ -8,8 +8,8 @@
 
 int main() {
   /* flakeid64_ctx_t *ctx = flakeid64_ctx_create(0); */
-  char mac[6];
-  flakeid64_ctx_t *ctx = flakeid64_ctx_create_with_spoof(mac);
+  unsigned mac;
+  flakeid64_ctx_t *ctx = flakeid64_ctx_create_with_spoof(&mac);
   int i = 0;
 
   for (; i < 10000; ++i) {
