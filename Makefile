@@ -23,4 +23,4 @@ test: $(TARGET_FILE)
 	gcc -g test/test_64.c $(TARGET_FILE) -I$(HEADER_DIR) -o ./test/test64
 
 clean:
-	@rm $(OBJS) $(TARGET_FIELS) -f
+	@rm -rf $(OBJS) $(TARGET_FIELS)

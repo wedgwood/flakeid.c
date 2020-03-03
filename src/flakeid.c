@@ -1,7 +1,7 @@
 #include "flakeid.h"
 #include "system.h"
+#include "endian.h"
 
-#include <endian.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,24 +86,24 @@ flakeid_ctx_t *flakeid_ctx_create(const unsigned char *machine, size_t len) {
 
 flakeid_ctx_t *flakeid_ctx_create_with_if(const char *if_name) {
   flakeid_ctx_t *ret = NULL;
-  unsigned char mac[6];
+  unsigned char addr[6];
 
-  if (!get_mac(if_name, mac)) {
-    ret = flakeid_ctx_create(mac, 6);
+  if (!get_ifaddr(if_name, addr)) {
+    ret = flakeid_ctx_create(addr, 6);
   }
 
   return ret;
 }
 
 flakeid_ctx_t *flakeid_ctx_create_with_spoof(unsigned char *out) {
-  unsigned char mac[6];
-  spoof_mac(mac);
+  unsigned char addr[6];
+  spoof_mac(addr);
 
   if (out) {
-    memcpy(out, mac, 6);
+    memcpy(out, addr, 6);
   }
 
-  return flakeid_ctx_create(mac, 6);
+  return flakeid_ctx_create(addr, 6);
 }
 
 void flakeid_ctx_destroy(flakeid_ctx_t *ctx) {
