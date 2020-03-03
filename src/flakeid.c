@@ -1,6 +1,7 @@
 #include "flakeid.h"
 #include "system.h"
-#include "endian.h"
+
+#include "portable_endian.h"
 
 #include <stdint.h>
 #include <stdio.h>

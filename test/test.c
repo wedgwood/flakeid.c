@@ -19,7 +19,7 @@ int main() {
   int rc = get_ifaddr("en0", addr);
 
   if (rc) {
-    printf("no hardware address found for eth0\n");
+    printf("no hardware address found for en0\n");
   } else {
     print_ifaddr(addr);
     printf("\n");
