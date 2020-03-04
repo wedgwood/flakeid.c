@@ -128,8 +128,7 @@ int get_ifaddr(const char *name, unsigned char *out) {
     for (struct ifaddrs *ptr = ifap; ptr; ptr = ptr->ifa_next) {
       if (ptr->ifa_addr->sa_family == AF_PACKET) {
         if (strcmp(name, ptr->ifa_name) == 0) {
-          uint8_t *addr = (uint8_t *)(struct sockaddr_ll *)ptr->ifa_addr;
-          memcpy(out, addr, 6);
+          memcpy(out, ((struct sockaddr_ll *)ptr->ifa_addr)->sll_addr, 6);
           ret = 0;
           break;
         }
