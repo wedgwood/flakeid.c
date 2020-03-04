@@ -1,5 +1,5 @@
 CC            = gcc
-CFLAGS        = -W -Wall -O3 -fPIC
+CFLAGS        = -W -Wall -O3 -fPIC -std=c99 -D_GNU_SOURCE
 INCLUDES      = -I.
 SOURCE_DIR    = ./src
 HEADER_DIR    = ./include
