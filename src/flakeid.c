@@ -33,8 +33,8 @@ static inline int random_with_range(int min, int max) {
   return random() % (max + 1 - min) + min;
 }
 
-static inline void spoof_mac(unsigned char *mac) {
-  // randomly assign a VM vendor's mac address prefix, which should
+static inline void spoof_addr(unsigned char *addr) {
+  // randomly assign a VM vendor's addr address prefix, which should
   // decrease chance of colliding with existing device's address
 
   static const unsigned char vendors[][3] = {
@@ -55,10 +55,10 @@ static inline void spoof_mac(unsigned char *mac) {
 
   int vendor = random_with_range(0, sizeof(vendors) / sizeof(vendors[0]));
 
-  memcpy(mac, vendors[vendor], 3);
-  mac[3] = random_with_range(0x00, 0x7F);
-  mac[4] = random_with_range(0x00, 0xFF);
-  mac[5] = random_with_range(0x00, 0xFF);
+  memcpy(addr, vendors[vendor], 3);
+  addr[3] = random_with_range(0x00, 0x7F);
+  addr[4] = random_with_range(0x00, 0xFF);
+  addr[5] = random_with_range(0x00, 0xFF);
 }
 
 static inline unsigned spoof_machine() {
@@ -98,7 +98,7 @@ flakeid_ctx_t *flakeid_ctx_create_with_if(const char *if_name) {
 
 flakeid_ctx_t *flakeid_ctx_create_with_spoof(unsigned char *out) {
   unsigned char addr[6];
-  spoof_mac(addr);
+  spoof_addr(addr);
 
   if (out) {
     memcpy(out, addr, 6);
@@ -210,15 +210,15 @@ void flakeid_hexdump(const unsigned char *id, char delimiter, unsigned char *out
   }
 }
 
-void flakeid_extract(const unsigned char *id, uint64_t *time, unsigned char *mac, uint16_t *pid, uint16_t *seq) {
+void flakeid_extract(const unsigned char *id, uint64_t *time, unsigned char *addr, uint16_t *pid, uint16_t *seq) {
   if (time) {
     uint64_t time_be = 0;
     memcpy((char *)&time_be + 2, id, 6);
     *time = be64toh(time_be);
   }
 
-  if (mac) {
-    memcpy(mac, id + 6, 6);
+  if (addr) {
+    memcpy(addr, id + 6, 6);
   }
 
   if (pid) {
